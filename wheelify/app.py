@@ -28,7 +28,7 @@ def build(requirements_file, output_dir, username, python):
 
     pip_path = f'/opt/python/{python}/bin/pip'
     user_id = get_user_id(username)
-    sudo = 'sudo ' if is_linux() else ''
+    sudo = 'sudo' if is_linux() else ''
 
     build_cmd = (
         f'useradd -u {user_id} {username}; '
@@ -36,21 +36,19 @@ def build(requirements_file, output_dir, username, python):
         f'chown -R {username}:{username} /io/wheels'
     )
 
-    cmd = textwrap.dedent(f'''
-        {sudo} docker run -it --rm \
-            --env BUILD_USER={username} \
-            --env USER_ID=`id -u {username}` \
-            -v {requirements_file}:/io/requirements.txt \
-            -v {output_dir}:/io/wheels \
-            quay.io/pypa/manylinux1_x86_64 \
-            /bin/bash -c "{build_cmd}"
-    ''')
+    cmd = (
+        f'{sudo} docker run -it --rm --env BUILD_USER={username} '
+        f'--env USER_ID=`id -u {username}` '
+        f'-v {requirements_file}:/io/requirements.txt '
+        f'-v {output_dir}:/io/wheels quay.io/pypa/manylinux1_x86_64 '
+        f'/bin/bash -c "{build_cmd}"'
+    )
 
-    os.system(cmd)
+    return subprocess.run(cmd, shell=True)
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Wheelify - Manylinux builder')
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='wheelify - Manylinux builder')
     parser.add_argument('requirements_file', type=str)
     parser.add_argument('--user', type=str, default=os.environ['USER'])
     parser.add_argument('--wheel-dir', type=str, default=DEFAULT_WHEEL_DIR)
@@ -60,7 +58,7 @@ def main():
         default='python3.6'
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     build(
         requirements_file=os.path.abspath(args.requirements_file),
