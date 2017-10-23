@@ -28,7 +28,7 @@ def build(requirements_file, output_dir, username, python):
 
     pip_path = f'/opt/python/{python}/bin/pip'
     user_id = get_user_id(username)
-    sudo = 'sudo' if is_linux() else ''
+    sudo = 'sudo ' if is_linux() else ''
 
     build_cmd = (
         f'useradd -u {user_id} {username}; '
@@ -37,7 +37,7 @@ def build(requirements_file, output_dir, username, python):
     )
 
     cmd = (
-        f'{sudo} docker run -it --rm --env BUILD_USER={username} '
+        f'{sudo}docker run -it --rm --env BUILD_USER={username} '
         f'--env USER_ID=`id -u {username}` '
         f'-v {requirements_file}:/io/requirements.txt '
         f'-v {output_dir}:/io/wheels quay.io/pypa/manylinux1_x86_64 '
