@@ -14,7 +14,7 @@ PYTHON_VERSION_MAP = {
 def is_linux():
     if sys.platform == "linux" or sys.platform == "linux2":
         return True
-    elif platform == "darwin":
+    elif sys.platform == "darwin":
         return False
 
 
