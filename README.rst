@@ -8,8 +8,7 @@ Usage
 
 .. code-block:: shell
 
-
-    Wheelify - Manylinux builder
+    wheelify - Manylinux builder
 
     positional arguments:
       requirements_file

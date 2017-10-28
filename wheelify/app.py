@@ -1,7 +1,6 @@
 import argparse
 import os
 import subprocess
-import textwrap
 import sys
 
 DEFAULT_WHEEL_DIR = os.path.join(os.environ['HOME'], '.manylinux')
@@ -12,10 +11,7 @@ PYTHON_VERSION_MAP = {
 
 
 def is_linux():
-    if sys.platform == "linux" or sys.platform == "linux2":
-        return True
-    elif sys.platform == "darwin":
-        return False
+    return sys.platform == "linux" or sys.platform == "linux2"
 
 
 def get_user_id(username):
@@ -23,16 +19,21 @@ def get_user_id(username):
     return stdout.decode('utf-8').strip()
 
 
+def requires_sudo():
+    groups = subprocess.check_output('groups').decode('utf-8').split()
+    return 'root' not in groups and 'docker' not in groups
+
+
 def build(requirements_file, output_dir, username, python):
     os.makedirs(output_dir, exist_ok=True)
 
-    pip_path = f'/opt/python/{python}/bin/pip'
+    pip = f'/opt/python/{python}/bin/pip'
     user_id = get_user_id(username)
-    sudo = 'sudo ' if is_linux() else ''
+    sudo = 'sudo ' if is_linux() and requires_sudo() else ''
 
     build_cmd = (
         f'useradd -u {user_id} {username}; '
-        f'{pip_path} wheel -f /io/wheels -w /io/wheels -r /io/requirements.txt; '
+        f'{pip} wheel -f /io/wheels -w /io/wheels -r /io/requirements.txt; '
         f'chown -R {username}:{username} /io/wheels'
     )
 
@@ -48,11 +49,15 @@ def build(requirements_file, output_dir, username, python):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='wheelify - Manylinux builder')
+    parser = argparse.ArgumentParser(
+        description='wheelify - Manylinux builder'
+    )
+
     parser.add_argument('requirements_file', type=str)
     parser.add_argument('--user', type=str, default=os.environ['USER'])
     parser.add_argument('--wheel-dir', type=str, default=DEFAULT_WHEEL_DIR)
-    parser.add_argument('--python',
+    parser.add_argument(
+        '--python',
         type=str,
         choices=PYTHON_VERSION_MAP.keys(),
         default='python3.6'
