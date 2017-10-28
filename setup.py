@@ -8,7 +8,7 @@ with open('README.rst') as f:
 
 setup(
     name='wheelify',
-    version='0.1.3',
+    version='0.1.4',
     description=('Simple manylinux wheel builder utility'),
     long_description=desc,
     url='https://github.com/jmvrbanac/wheelify',
